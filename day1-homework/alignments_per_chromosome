@@ -1,0 +1,6 @@
+#Alignments per Chromosome
+
+#!/bin/bash
+
+#cut out junk lines, group and count on chromosome number
+grep -v "^@" BDGP6.sam | datamash -s -g 3 count 3 <BDGP6.sam | grep -v "^211000" | grep -v "^LN"

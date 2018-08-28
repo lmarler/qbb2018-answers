@@ -1,0 +1,35 @@
+#doRNA-seq
+
+#!/bin/bash
+
+GENOME=../genomes/BDGP6
+ANNOTATION=../genomes/BDGP6.Ensembl.81.gtf
+
+for SAMPLE in SRR072893 SRR072903 SRR072905 SRR072915
+do
+	cd ~/qbb2018-answers/day1-afternoon/
+	mkdir $SAMPLE
+
+#Generate quality control report of .fastq file
+	cd ~/qbb2018-answers/day1-afternoon/$SAMPLE
+	fastqc ~/data/rawdata/$SAMPLE.fastq
+
+#build index
+#hisat2-build BDGP6.fa BDGP6
+
+#map reads using hisat2
+hisat2 -p 8 -x ~/qbb2018-answers/genomes/BDGP6 -U ~/data/rawdata/$SAMPLE.fastq -S $SAMPLE.sam 
+
+#convert .sam file to .bam using SAMtools
+samtools view -S -b $SAMPLE.sam > $SAMPLE.bam
+
+#sort reads based on alignment position
+samtools sort $SAMPLE.bam -o $SAMPLE.sorted.bam
+
+#index sorted BAM file
+samtools index $SAMPLE.sorted.bam
+
+#quantitate in stringtie
+stringtie $SAMPLE.sorted.bam -p 8 -e -G ~/qbb2018-answers/genomes/BDGP6.Ensembl.81.gtf  -o SAMPLE.stringtie.gtf -B
+
+done
